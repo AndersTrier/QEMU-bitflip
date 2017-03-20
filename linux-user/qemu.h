@@ -623,10 +623,10 @@ static inline void *lock_user_string(abi_ulong guest_addr)
 
 struct bitflip {
   uint64_t pc,
-           val,
+           mask,
            itr;
   char reg[4];
 };
 
 extern struct bitflip* bitflips;
-
+extern int bitflips_size;

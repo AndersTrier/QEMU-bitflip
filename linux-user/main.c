@@ -3749,6 +3749,7 @@ static void handle_arg_trace(const char *arg)
 }
 
 struct bitflip* bitflips;
+int bitflips_size;
 
 static void handle_arg_bitflips(const char* arg){
     int numLines = 0, currentLine = 0, ret;
@@ -3771,7 +3772,7 @@ static void handle_arg_bitflips(const char* arg){
         
          struct bitflip* bitflipStruct = &bitflips[currentLine];
          ret = sscanf (line, "%lx, %3s, %lx, %lu",
-            &bitflipStruct->pc, bitflipStruct->reg, &bitflipStruct->val, &bitflipStruct->itr);
+            &bitflipStruct->pc, bitflipStruct->reg, &bitflipStruct->mask, &bitflipStruct->itr);
 
          if (ret != 4)
             printf ("Line '%s' didn't scan properly\n", line);
@@ -3779,11 +3780,12 @@ static void handle_arg_bitflips(const char* arg){
             currentLine++;
     }
     fclose(bitflipsfile);
+    bitflips_size = currentLine + 1;
     printf("Read following %d bitflip(s):\n", currentLine);
     for (int i = 0; i != currentLine; i++){
-        printf("Bitflip %d:\n  pc  = %lx,\n  reg = %s,\n  val = %lx,\n  itr = %lu.\n", i, 
+        printf("Bitflip %d:\n  pc  = %lx,\n  reg = %s,\n  mask = %lx,\n  itr = %lu.\n", i, 
           bitflips[i].pc, bitflips[i].reg, 
-          bitflips[i].val, bitflips[i].itr);
+          bitflips[i].mask, bitflips[i].itr);
     }
 
 }
