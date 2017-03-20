@@ -31,6 +31,8 @@
 #include "trace-tcg.h"
 #include "exec/log.h"
 
+#include "qemu.h"
+
 
 #define PREFIX_REPZ   0x01
 #define PREFIX_REPNZ  0x02
@@ -8418,6 +8420,37 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         }
         if (num_insns == max_insns && (tb->cflags & CF_LAST_IO)) {
             gen_io_start();
+        }
+
+
+        // Insert a bitflip _before_ the target instruction
+        for(int i = 0; i < bitflips_size; i++){
+            if (pc_ptr == bitflips[i].pc){
+                TCGv_i64 t_mask = tcg_const_i64(bitflips[i].mask);
+                TCGv_i32 reg;
+                if (!strcmp("EAX", bitflips[i].reg)){
+                    reg = tcg_const_i32(R_EAX);
+                } else if(!strcmp("ECX", bitflips[i].reg)) {
+                    reg = tcg_const_i32(R_EAX);
+                } else if(!strcmp("EDX", bitflips[i].reg)) {
+                    reg = tcg_const_i32(R_EDX);
+                } else if(!strcmp("EBX", bitflips[i].reg)) {
+                    reg = tcg_const_i32(R_EBX);
+                } else if(!strcmp("ESP", bitflips[i].reg)) {
+                    reg = tcg_const_i32(R_ESP);
+                } else if(!strcmp("EBP", bitflips[i].reg)) {
+                    reg = tcg_const_i32(R_EBP);
+                } else if(!strcmp("ESI", bitflips[i].reg)) {
+                    reg = tcg_const_i32(R_ESI);
+                } else if(!strcmp("EDI", bitflips[i].reg)) {
+                    reg = tcg_const_i32(R_EDI);
+                } else {
+                    printf("Unsupported register: %s\n", bitflips[i].reg);
+                    continue;
+                }
+
+                gen_helper_bitflip(cpu_env, reg, t_mask);
+            }
         }
 
         pc_ptr = disas_insn(env, dc, pc_ptr);
