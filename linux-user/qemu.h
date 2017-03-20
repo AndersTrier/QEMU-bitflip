@@ -620,3 +620,13 @@ static inline void *lock_user_string(abi_ulong guest_addr)
 #include "target_structs.h"
 
 #endif /* QEMU_H */
+
+struct bitflip {
+  uint64_t pc,
+           val,
+           itr;
+  char reg[4];
+};
+
+extern struct bitflip* bitflips;
+

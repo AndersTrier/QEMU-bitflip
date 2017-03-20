@@ -3748,6 +3748,46 @@ static void handle_arg_trace(const char *arg)
     trace_file = trace_opt_parse(arg);
 }
 
+struct bitflip* bitflips;
+
+static void handle_arg_bitflips(const char* arg){
+    int numLines = 0, currentLine = 0, ret;
+    char ch, line[200];
+    FILE* bitflipsfile = fopen(arg, "r");
+    if (!bitflipsfile){
+        fprintf(stderr, "Couldn't open file '%s'\n", arg);
+        exit(EXIT_FAILURE);
+    }
+
+    // Count number of lines in the file
+    while (EOF != (ch = fgetc(bitflipsfile)))
+        if (ch == '\n')
+            numLines++;
+    bitflips = malloc(sizeof(struct bitflip) * (numLines + 1));
+
+    rewind(bitflipsfile);
+    while (fgets(line, sizeof(line), bitflipsfile) != NULL) {
+         if (line[0] == '\n') continue; // ignore empty line
+        
+         struct bitflip* bitflipStruct = &bitflips[currentLine];
+         ret = sscanf (line, "%lu, %3s, %lx, %lu",
+            &bitflipStruct->pc, bitflipStruct->reg, &bitflipStruct->val, &bitflipStruct->itr);
+
+         if (ret != 4)
+            printf ("Line '%s' didn't scan properly\n", line);
+         else
+            currentLine++;
+    }
+    fclose(bitflipsfile);
+    printf("Read following %d bitflip(s):\n", currentLine);
+    for (int i = 0; i != currentLine; i++){
+        printf("Bitflip %d:\n  pc  = %lu,\n  reg = %s,\n  val = %lx,\n  itr = %lu.\n", i, 
+          bitflips[i].pc, bitflips[i].reg, 
+          bitflips[i].val, bitflips[i].itr);
+    }
+
+}
+
 struct qemu_argument {
     const char *argv;
     const char *env;
@@ -3799,6 +3839,8 @@ static const struct qemu_argument arg_table[] = {
      "",           "[[enable=]<pattern>][,events=<file>][,file=<file>]"},
     {"version",    "QEMU_VERSION",     false, handle_arg_version,
      "",           "display version information and exit"},
+    {"bitflips",   "",                 true,  handle_arg_bitflips,
+     "",           "Specify bitflips"},
     {NULL, NULL, false, NULL, NULL, NULL}
 };
 
