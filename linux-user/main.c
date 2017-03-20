@@ -3770,7 +3770,7 @@ static void handle_arg_bitflips(const char* arg){
          if (line[0] == '\n') continue; // ignore empty line
         
          struct bitflip* bitflipStruct = &bitflips[currentLine];
-         ret = sscanf (line, "%lu, %3s, %lx, %lu",
+         ret = sscanf (line, "%lx, %3s, %lx, %lu",
             &bitflipStruct->pc, bitflipStruct->reg, &bitflipStruct->val, &bitflipStruct->itr);
 
          if (ret != 4)
@@ -3781,7 +3781,7 @@ static void handle_arg_bitflips(const char* arg){
     fclose(bitflipsfile);
     printf("Read following %d bitflip(s):\n", currentLine);
     for (int i = 0; i != currentLine; i++){
-        printf("Bitflip %d:\n  pc  = %lu,\n  reg = %s,\n  val = %lx,\n  itr = %lu.\n", i, 
+        printf("Bitflip %d:\n  pc  = %lx,\n  reg = %s,\n  val = %lx,\n  itr = %lu.\n", i, 
           bitflips[i].pc, bitflips[i].reg, 
           bitflips[i].val, bitflips[i].itr);
     }
