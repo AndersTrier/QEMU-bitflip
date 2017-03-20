@@ -638,13 +638,14 @@ void helper_wrpkru(CPUX86State *env, uint32_t ecx, uint64_t val)
     tlb_flush(cs, 1);
 }
 
-void helper_bitflip(CPUX86State *env)
+void helper_bitflip(CPUX86State *env, int reg, uint64_t mask)
 {
     static int n_exec = 0;
     n_exec++;
 
-    uint64_t old_eax = env->regs[R_EAX];
-    env->regs[R_EAX] |= 1;
+    uint64_t old_val = env->regs[reg];
+    env->regs[reg] |= mask;
 
-    qemu_log("Bitflip: EAX flipped from %" PRIx64 " to %" PRIx64 "\n", old_eax, env->regs[R_EAX]);
+    qemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64 "\n", reg, old_val, env->regs[reg]);
 }
+
