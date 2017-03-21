@@ -8427,27 +8427,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         for(int i = 0; i < bitflips_size; i++){
             if (pc_ptr == bitflips[i].pc){
                 TCGv_i64 t_mask = tcg_const_i64(bitflips[i].mask);
-                TCGv_i32 reg;
-                if (!strcmp("EAX", bitflips[i].reg)){
-                    reg = tcg_const_i32(R_EAX);
-                } else if(!strcmp("ECX", bitflips[i].reg)) {
-                    reg = tcg_const_i32(R_EAX);
-                } else if(!strcmp("EDX", bitflips[i].reg)) {
-                    reg = tcg_const_i32(R_EDX);
-                } else if(!strcmp("EBX", bitflips[i].reg)) {
-                    reg = tcg_const_i32(R_EBX);
-                } else if(!strcmp("ESP", bitflips[i].reg)) {
-                    reg = tcg_const_i32(R_ESP);
-                } else if(!strcmp("EBP", bitflips[i].reg)) {
-                    reg = tcg_const_i32(R_EBP);
-                } else if(!strcmp("ESI", bitflips[i].reg)) {
-                    reg = tcg_const_i32(R_ESI);
-                } else if(!strcmp("EDI", bitflips[i].reg)) {
-                    reg = tcg_const_i32(R_EDI);
-                } else {
-                    printf("Unsupported register: %s\n", bitflips[i].reg);
-                    continue;
-                }
+                TCGv_i32 reg    = tcg_const_i32(bitflips[i].reg);
 
                 gen_helper_bitflip(cpu_env, reg, t_mask);
             }

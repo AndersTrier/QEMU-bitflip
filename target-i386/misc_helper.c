@@ -646,8 +646,9 @@ void helper_bitflip(CPUX86State *env, int reg, uint64_t mask)
     n_exec++;
 
     uint64_t old_val = env->regs[reg];
-    env->regs[reg] |= mask;
+    env->regs[reg] ^= mask;
 
-    gemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64 "\n", reg, old_val, env->regs[reg]);
+    gemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64 
+             ", using mask: %" PRIx64 "\n", reg, old_val, env->regs[reg], mask);
 }
 

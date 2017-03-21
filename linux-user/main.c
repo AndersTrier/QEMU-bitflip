@@ -3753,7 +3753,7 @@ int bitflips_size;
 
 static void handle_arg_bitflips(const char* arg){
     int numLines = 0, currentLine = 0, ret;
-    char ch, line[200];
+    char ch, line[200], regbuf[4];
     FILE* bitflipsfile = fopen(arg, "r");
     if (!bitflipsfile){
         fprintf(stderr, "Couldn't open file '%s'\n", arg);
@@ -3764,26 +3764,66 @@ static void handle_arg_bitflips(const char* arg){
     while (EOF != (ch = fgetc(bitflipsfile)))
         if (ch == '\n')
             numLines++;
-    bitflips = malloc(sizeof(struct bitflip) * (numLines + 1));
+    bitflips = calloc(numLines + 1, sizeof(struct bitflip));
 
     rewind(bitflipsfile);
     while (fgets(line, sizeof(line), bitflipsfile) != NULL) {
-         if (line[0] == '\n') continue; // ignore empty line
+        // ignore empty lines and comments
+        if (line[0] == '\n' || line[0] == '#') continue;
         
-         struct bitflip* bitflipStruct = &bitflips[currentLine];
-         ret = sscanf (line, "%lx, %3s, %lx, %lu",
-            &bitflipStruct->pc, bitflipStruct->reg, &bitflipStruct->mask, &bitflipStruct->itr);
+        struct bitflip* bitflipStruct = &bitflips[currentLine];
+        ret = sscanf (line, "%lx, %3s, %lx, %d",
+           &bitflipStruct->pc, regbuf, &bitflipStruct->mask, &bitflipStruct->itr);
 
-         if (ret != 4)
+        if (ret != 4){
             printf ("Line '%s' didn't scan properly\n", line);
-         else
-            currentLine++;
+            continue;
+        }
+
+        if       (!strcmp("EAX", regbuf) || !strcmp("RAX", regbuf)){
+            bitflipStruct->reg = 0;
+        } else if(!strcmp("ECX", regbuf) || !strcmp("RCX", regbuf)) {
+            bitflipStruct->reg = 1;
+        } else if(!strcmp("EDX", regbuf) || !strcmp("RDX", regbuf)) {
+            bitflipStruct->reg = 2;
+        } else if(!strcmp("EBX", regbuf) || !strcmp("RBX", regbuf)) {
+            bitflipStruct->reg = 3;
+        } else if(!strcmp("ESP", regbuf) || !strcmp("RSP", regbuf)) {
+            bitflipStruct->reg = 4;
+        } else if(!strcmp("EBP", regbuf) || !strcmp("RBP", regbuf)) {
+            bitflipStruct->reg = 5;
+        } else if(!strcmp("ESI", regbuf) || !strcmp("RSI", regbuf)) {
+            bitflipStruct->reg = 6;
+        } else if(!strcmp("EDI", regbuf) || !strcmp("RDI", regbuf)) {
+            bitflipStruct->reg = 7;
+        } else if(!strcmp("R8", regbuf)) {
+            bitflipStruct->reg = 8;
+        } else if(!strcmp("R9", regbuf)) {
+            bitflipStruct->reg = 9;
+        } else if(!strcmp("R10", regbuf)) {
+            bitflipStruct->reg = 10;
+        } else if(!strcmp("R11", regbuf)) {
+            bitflipStruct->reg = 11;
+        } else if(!strcmp("R12", regbuf)) {
+            bitflipStruct->reg = 12;
+        } else if(!strcmp("R13", regbuf)) {
+            bitflipStruct->reg = 13;
+        } else if(!strcmp("R14", regbuf)) {
+            bitflipStruct->reg = 14;
+        } else if(!strcmp("R15", regbuf)) {
+            bitflipStruct->reg = 15;
+        } else {
+            printf("Unsupported register: %s\n", regbuf);
+            continue;
+        }   
+        currentLine++;
     }
+
     fclose(bitflipsfile);
-    bitflips_size = currentLine + 1;
+    bitflips_size = currentLine;
     printf("Read following %d bitflip(s):\n", currentLine);
     for (int i = 0; i != currentLine; i++){
-        printf("Bitflip %d:\n  pc  = %lx,\n  reg = %s,\n  mask = %lx,\n  itr = %lu.\n", i, 
+        printf("Bitflip %d:\n  pc  = %lx,\n  reg = %d,\n  mask = %lx,\n  itr = %d.\n", i, 
           bitflips[i].pc, bitflips[i].reg, 
           bitflips[i].mask, bitflips[i].itr);
     }
