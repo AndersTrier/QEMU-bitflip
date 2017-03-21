@@ -624,7 +624,8 @@ static inline void *lock_user_string(abi_ulong guest_addr)
 struct bitflip {
   uint64_t pc,
            mask;
-  int      itr, 
+  int      itr,
+           itrCounter, 
            reg;
 };
 

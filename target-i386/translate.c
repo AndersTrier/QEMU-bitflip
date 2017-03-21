@@ -8426,10 +8426,8 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         // Insert a bitflip _before_ the target instruction
         for(int i = 0; i < bitflips_size; i++){
             if (pc_ptr == bitflips[i].pc){
-                TCGv_i64 t_mask = tcg_const_i64(bitflips[i].mask);
-                TCGv_i32 reg    = tcg_const_i32(bitflips[i].reg);
-
-                gen_helper_bitflip(cpu_env, reg, t_mask);
+                TCGv_i32 bitflipIndex = tcg_const_i32(i);
+                gen_helper_bitflip(cpu_env, bitflipIndex);
             }
         }
 

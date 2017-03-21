@@ -640,15 +640,18 @@ void helper_wrpkru(CPUX86State *env, uint32_t ecx, uint64_t val)
     tlb_flush(cs, 1);
 }
 
-void helper_bitflip(CPUX86State *env, int reg, uint64_t mask)
+void helper_bitflip(CPUX86State *env, int flipIndex)
 {
-    static int n_exec = 0;
-    n_exec++;
+    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
+        int reg = bitflips[flipIndex].reg;
+        uint64_t old_val = env->regs[reg];
+        env->regs[reg] ^= bitflips[flipIndex].mask;
 
-    uint64_t old_val = env->regs[reg];
-    env->regs[reg] ^= mask;
-
-    gemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64 
-             ", using mask: %" PRIx64 "\n", reg, old_val, env->regs[reg], mask);
+        gemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64
+                 ", using mask: %" PRIx64 "\n", reg, old_val, env->regs[reg], bitflips[flipIndex].mask);
+    } else if (bitflips[flipIndex].itr > bitflips[flipIndex].itrCounter) {
+        return;
+    }
+    bitflips[flipIndex].itrCounter++;
 }
 

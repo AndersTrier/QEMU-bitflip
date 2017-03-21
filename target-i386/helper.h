@@ -229,5 +229,5 @@ DEF_HELPER_3(rclq, tl, env, tl, tl)
 DEF_HELPER_3(rcrq, tl, env, tl, tl)
 #endif
 
-DEF_HELPER_3(bitflip, void, env, int, i64)
+DEF_HELPER_2(bitflip, void, env, int)
 
