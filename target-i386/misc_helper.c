@@ -655,3 +655,29 @@ void helper_bitflip(CPUX86State *env, int flipIndex)
     bitflips[flipIndex].itrCounter++;
 }
 
+void helper_bitflip_eip(CPUX86State *env, int flipIndex){
+    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
+        uint64_t old_val = env->eip;
+        env->eip ^= bitflips[flipIndex].mask;
+
+        gemu_log("Bitflip: EIP/RIP flipped from %" PRIx64 " to %" PRIx64
+                 ", using mask: %" PRIx64 "\n", old_val, env->eip, bitflips[flipIndex].mask);
+    } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
+        return;
+    }
+    bitflips[flipIndex].itrCounter++;
+}
+
+
+void helper_bitflip_eflags(CPUX86State *env, int flipIndex){
+    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
+        uint64_t old_val = env->eflags;
+        env->eflags ^= bitflips[flipIndex].mask;
+
+        gemu_log("Bitflip: EFLAGS flipped from %" PRIx64 " to %" PRIx64
+                 ", using mask: %" PRIx64 "\n", old_val, env->eflags, bitflips[flipIndex].mask);
+    } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
+        return;
+    }
+    bitflips[flipIndex].itrCounter++;
+}

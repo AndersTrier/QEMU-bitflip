@@ -3753,7 +3753,7 @@ int bitflips_size;
 
 static void handle_arg_bitflips(const char* arg){
     int numLines = 0, currentLine = 0, ret;
-    char ch, line[200], regbuf[4];
+    char ch, line[200], regbuf[7];
     FILE* bitflipsfile = fopen(arg, "r");
     if (!bitflipsfile){
         fprintf(stderr, "Couldn't open file '%s'\n", arg);
@@ -3776,7 +3776,7 @@ static void handle_arg_bitflips(const char* arg){
         if (line[0] == '\n' || line[0] == '#') continue;
         
         struct bitflip* bitflipStruct = &bitflips[currentLine];
-        ret = sscanf (line, "%lx, %3s, %lx, %d",
+        ret = sscanf (line, "%lx, %6[^,], %lx, %d",
            &bitflipStruct->pc, regbuf, &bitflipStruct->mask, &bitflipStruct->itr);
 
         if (ret != 4){
@@ -3816,6 +3816,10 @@ static void handle_arg_bitflips(const char* arg){
             bitflipStruct->reg = 14;
         } else if(!strcmp("R15", regbuf)) {
             bitflipStruct->reg = 15;
+        } else if(!strcmp("EIP", regbuf) || !strcmp("RIP", regbuf)) {
+            bitflipStruct->reg = 16;
+        } else if(!strcmp("EFLAGS", regbuf)) {
+            bitflipStruct->reg = 17;
         } else {
             printf("Unsupported register: %s\n", regbuf);
             continue;
