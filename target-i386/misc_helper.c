@@ -24,6 +24,8 @@
 #include "exec/cpu_ldst.h"
 #include "exec/address-spaces.h"
 
+#include "qemu.h"
+
 void helper_outb(CPUX86State *env, uint32_t port, uint32_t data)
 {
 #ifdef CONFIG_USER_ONLY
@@ -646,6 +648,6 @@ void helper_bitflip(CPUX86State *env, int reg, uint64_t mask)
     uint64_t old_val = env->regs[reg];
     env->regs[reg] |= mask;
 
-    qemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64 "\n", reg, old_val, env->regs[reg]);
+    gemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64 "\n", reg, old_val, env->regs[reg]);
 }
 
