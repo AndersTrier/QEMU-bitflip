@@ -649,7 +649,7 @@ void helper_bitflip(CPUX86State *env, int flipIndex)
 
         gemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64
                  ", using mask: %" PRIx64 "\n", reg, old_val, env->regs[reg], bitflips[flipIndex].mask);
-    } else if (bitflips[flipIndex].itr > bitflips[flipIndex].itrCounter) {
+    } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
         return;
     }
     bitflips[flipIndex].itrCounter++;
