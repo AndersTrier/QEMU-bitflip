@@ -3764,9 +3764,10 @@ static void handle_arg_bitflips(const char* arg){
     while (EOF != (ch = fgetc(bitflipsfile)))
         if (ch == '\n')
             numLines++;
-    bitflips = calloc(numLines + 1, sizeof(struct bitflip));
+    bitflips = mmap(NULL, sizeof(struct bitflip) * (numLines + 1), 
+                    PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     if (!bitflips){
-        fprintf(stderr, "Calloc failed\n");
+        fprintf(stderr, "Memory alloc failed\n");
         exit(EXIT_FAILURE);
     }
 
