@@ -8434,6 +8434,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
                 } else {
                     gen_helper_bitflip(cpu_env, bitflipIndex);
                 }
+                tcg_temp_free_i32(bitflipIndex);
             }
         }
 
