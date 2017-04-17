@@ -3777,8 +3777,25 @@ static void handle_arg_bitflips(const char* arg){
         if (line[0] == '\n' || line[0] == '#') continue;
         
         struct bitflip* bitflipStruct = &bitflips[currentLine];
+
+        if (line[0] == 'M'){
+            bitflipStruct->type = MEM;
+            ret = sscanf (line, "M, %lx, %lx, %lx, %d",
+                &bitflipStruct->pc, &bitflipStruct->mem_ptr, 
+                &bitflipStruct->mask, &bitflipStruct->itr);
+            if (ret != 4){
+                printf ("Line '%s' didn't scan properly\n", line);
+                continue;
+            }
+            currentLine++;
+            continue;
+
+        }
+        bitflipStruct->type = REG;
         ret = sscanf (line, "%lx, %6[^,], %lx, %d",
-           &bitflipStruct->pc, regbuf, &bitflipStruct->mask, &bitflipStruct->itr);
+            &bitflipStruct->pc, regbuf, 
+            &bitflipStruct->mask, &bitflipStruct->itr);
+        
 
         if (ret != 4){
             printf ("Line '%s' didn't scan properly\n", line);
@@ -3832,9 +3849,15 @@ static void handle_arg_bitflips(const char* arg){
     bitflips_size = currentLine;
     printf("Read following %d bitflip(s):\n", currentLine);
     for (int i = 0; i != currentLine; i++){
-        printf("Bitflip %d:\n  pc  = %lx,\n  reg = %d,\n  mask = %lx,\n  itr = %d.\n", i, 
-          bitflips[i].pc, bitflips[i].reg, 
-          bitflips[i].mask, bitflips[i].itr);
+        printf("Bitflip %d:\n  pc  = %lx,\n",
+          i, bitflips[i].pc);
+   
+        if (bitflips[i].type == REG)
+            printf("  reg = %d,\n", bitflips[i].reg);
+        else
+            printf("  mem_ptr = %lx,\n", bitflips[i].mem_ptr);
+
+        printf("  mask = %lx,\n  itr = %d.\n", bitflips[i].mask, bitflips[i].itr);
     }
 
 }

@@ -668,7 +668,6 @@ void helper_bitflip_eip(CPUX86State *env, int flipIndex){
     bitflips[flipIndex].itrCounter++;
 }
 
-
 void helper_bitflip_eflags(CPUX86State *env, int flipIndex){
     if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
         uint64_t old_val = env->eflags;
@@ -681,3 +680,27 @@ void helper_bitflip_eflags(CPUX86State *env, int flipIndex){
     }
     bitflips[flipIndex].itrCounter++;
 }
+
+void helper_bitflip_mem(CPUX86State *env, int flipIndex){
+// Memory documentation in include/exec/cpu_ldst.h
+// Also, check function: tlb_vaddr_to_host
+    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
+      uint64_t ptr = bitflips[flipIndex].mem_ptr;
+      // Read old value from memory
+      uint8_t old_val = cpu_ldub_data(env, ptr);
+    
+      // Do xor with the mask
+      uint8_t new_val = old_val ^ bitflips[flipIndex].mask;
+
+      // Store the value
+      cpu_stb_data(env, ptr, new_val);
+
+      gemu_log("Bitflip: Value at memory address %lx flipped from %02x to %02x"
+                 ", using mask: %lx\n", ptr, old_val, new_val, bitflips[flipIndex].mask);
+
+  } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
+      return;
+  }
+  bitflips[flipIndex].itrCounter++;
+}
+

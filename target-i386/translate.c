@@ -8427,6 +8427,11 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         for(int i = 0; i < bitflips_size; i++){
             if (pc_ptr == bitflips[i].pc){
                 TCGv_i32 bitflipIndex = tcg_const_i32(i);
+
+                if (bitflips[i].type == MEM){
+                    gen_helper_bitflip_mem(cpu_env, bitflipIndex);
+                }
+
                 if (bitflips[i].reg == 16) { // 16 is EIP
                     gen_helper_bitflip_eip(cpu_env, bitflipIndex);
                 } else if (bitflips[i].reg == 17) { // EFLAGS

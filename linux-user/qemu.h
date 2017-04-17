@@ -621,12 +621,18 @@ static inline void *lock_user_string(abi_ulong guest_addr)
 
 #endif /* QEMU_H */
 
+enum bitflip_type {REG, MEM};
+
 struct bitflip {
+  enum bitflip_type type;
   uint64_t pc,
            mask;
   int      itr,
-           itrCounter, 
-           reg;
+           itrCounter;
+  union {
+    int     reg;
+    uint64_t mem_ptr;
+  };
 };
 
 extern struct bitflip* bitflips;
