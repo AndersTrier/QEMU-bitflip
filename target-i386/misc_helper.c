@@ -640,67 +640,65 @@ void helper_wrpkru(CPUX86State *env, uint32_t ecx, uint64_t val)
     tlb_flush(cs, 1);
 }
 
+int time_to_bitflip(int i);
+int time_to_bitflip(int i){
+    if (bitflips[i].itrCounter == bitflips[i].itr)
+        return 0;
+
+    bitflips[i].itrCounter++;
+
+    if (bitflips[i].itrCounter == bitflips[i].itr)
+        return 1; 
+    else
+        return 0;
+}
+
 void helper_bitflip(CPUX86State *env, int flipIndex)
 {
-    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
+    if (time_to_bitflip(flipIndex)) {
         int reg = bitflips[flipIndex].reg;
         uint64_t old_val = env->regs[reg];
         env->regs[reg] ^= bitflips[flipIndex].mask;
 
         gemu_log("Bitflip: %d flipped from %" PRIx64 " to %" PRIx64
                  ", using mask: %" PRIx64 "\n", reg, old_val, env->regs[reg], bitflips[flipIndex].mask);
-    } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
-        return;
     }
-    bitflips[flipIndex].itrCounter++;
 }
 
 void helper_bitflip_eip(CPUX86State *env, int flipIndex){
-    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
+    if (time_to_bitflip(flipIndex)) {
         uint64_t old_val = env->eip;
         env->eip ^= bitflips[flipIndex].mask;
 
         gemu_log("Bitflip: EIP/RIP flipped from %" PRIx64 " to %" PRIx64
                  ", using mask: %" PRIx64 "\n", old_val, env->eip, bitflips[flipIndex].mask);
-    } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
-        return;
     }
-    bitflips[flipIndex].itrCounter++;
 }
 
 void helper_bitflip_eflags(CPUX86State *env, int flipIndex){
-    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
+    if (time_to_bitflip(flipIndex)) {
         uint64_t old_val = env->eflags;
         env->eflags ^= bitflips[flipIndex].mask;
 
         gemu_log("Bitflip: EFLAGS flipped from %" PRIx64 " to %" PRIx64
                  ", using mask: %" PRIx64 "\n", old_val, env->eflags, bitflips[flipIndex].mask);
-    } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
-        return;
     }
-    bitflips[flipIndex].itrCounter++;
 }
 
 void helper_bitflip_mem(CPUX86State *env, int flipIndex){
-// Memory documentation in include/exec/cpu_ldst.h
-// Also, check function: tlb_vaddr_to_host
-    if ((bitflips[flipIndex].itrCounter + 1) == bitflips[flipIndex].itr) {
-      uint64_t ptr = bitflips[flipIndex].mem_ptr;
-      // Read old value from memory
-      uint8_t old_val = cpu_ldub_data(env, ptr);
-    
-      // Do xor with the mask
-      uint8_t new_val = old_val ^ bitflips[flipIndex].mask;
+    // Memory functions described in include/exec/cpu_ldst.h
+    // Also, check function: tlb_vaddr_to_host
+    if (time_to_bitflip(flipIndex)) {
+        uint64_t ptr = bitflips[flipIndex].mem_ptr;
+        // Read old value from memory,
+        // do xor with the mask, and
+        // store the new value
+        uint8_t old_val = cpu_ldub_data(env, ptr);
+        uint8_t new_val = old_val ^ bitflips[flipIndex].mask;
+        cpu_stb_data(env, ptr, new_val);
 
-      // Store the value
-      cpu_stb_data(env, ptr, new_val);
-
-      gemu_log("Bitflip: Value at memory address %lx flipped from %02x to %02x"
+        gemu_log("Bitflip: Value at memory address %lx flipped from %02x to %02x"
                  ", using mask: %lx\n", ptr, old_val, new_val, bitflips[flipIndex].mask);
-
-  } else if (bitflips[flipIndex].itrCounter >= bitflips[flipIndex].itr) {
-      return;
-  }
-  bitflips[flipIndex].itrCounter++;
+    }
 }
 
