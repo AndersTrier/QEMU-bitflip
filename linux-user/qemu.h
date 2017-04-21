@@ -5,6 +5,7 @@
 #include "cpu.h"
 #include "exec/exec-all.h"
 #include "exec/cpu_ldst.h"
+#include "bitflip.h"
 
 #undef DEBUG_REMAP
 #ifdef DEBUG_REMAP
@@ -620,20 +621,3 @@ static inline void *lock_user_string(abi_ulong guest_addr)
 #include "target_structs.h"
 
 #endif /* QEMU_H */
-
-enum bitflip_type {REG, RIP, EFLAGS, MEM};
-
-struct bitflip {
-  enum bitflip_type type;
-  uint64_t pc,
-           mask;
-  int      itr,
-           itrCounter;
-  union {
-    int     reg;
-    uint64_t mem_ptr;
-  };
-};
-
-extern struct bitflip* bitflips;
-extern int bitflips_size;
