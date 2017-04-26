@@ -236,6 +236,13 @@ void target_disas(FILE *out, CPUState *cpu, target_ulong code,
 
     for (pc = code; size > 0; pc += count, size -= count) {
 	fprintf(out, "0x" TARGET_FMT_lx ":  ", pc);
+
+	fprintf(out, "0x");
+  for (int i = 0; i < size; i++) {
+	  fprintf(out, "%02x", ((unsigned char*)code)[i]);
+  }
+	fprintf(out, " ");
+
 	count = s.info.print_insn(pc, &s.info);
 #if 0
         {
