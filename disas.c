@@ -242,7 +242,7 @@ void target_disas(FILE *out, CPUState *cpu, target_ulong code,
        as it uses the codeblocks size for the loop. */
     fprintf(out, "0x");
     for (int i = 0; i < size; i++) {
-        fprintf(out, "%02x", ((unsigned char*)code)[i]);
+        fprintf(out, "%02x", ((unsigned char*)(intptr_t)code)[i]);
     }
     fprintf(out, " ");
 
