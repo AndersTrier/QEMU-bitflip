@@ -686,16 +686,29 @@ void helper_bitflip_eflags(CPUX86State *env, int flipIndex){
 }
 
 void helper_bitflip_mem(CPUX86State *env, int flipIndex){
-    // Memory functions described in include/exec/cpu_ldst.h
-    // Also, check function: tlb_vaddr_to_host
+    // Memory functions described in include/exec/cpu_ldst.h and include/exec/memory.h
+    // Also, check functions: tlb_vaddr_to_host, tlb_protect_code, memory_region_from_host, tb_invalidate_phys_page
     if (time_to_bitflip(flipIndex)) {
         uint64_t ptr = bitflips[flipIndex].mem_ptr;
+
+        // If the page is marked read only, we need to mark it writable 
+        size_t pagesize = sysconf(_SC_PAGESIZE);
+        // Compute the start of the page pointed to by ptr
+        void* target_page = (void*)((uintptr_t) g2h(ptr) & ~(pagesize - 1));
+
+        // Mark the page as writable
+        if (mprotect(target_page, pagesize, PROT_READ | PROT_WRITE ))
+             perror("mprotect failed");
+
         // Read old value from memory,
         // do xor with the mask, and
         // store the new value
         uint8_t old_val = cpu_ldub_data(env, ptr);
         uint8_t new_val = old_val ^ bitflips[flipIndex].mask;
         cpu_stb_data(env, ptr, new_val);
+
+	// Flush the translation cache
+        tb_flush(CPU(x86_env_get_cpu(env)));
 
         gemu_log("Bitflip: Value at memory address %lx flipped from %02x to %02x"
                  ", using mask: %lx\n", ptr, old_val, new_val, bitflips[flipIndex].mask);
